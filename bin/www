@@ -8,6 +8,7 @@ var app = require('../app');
 var debug = require('debug')('chatroomdev:server');
 var http = require('http');
 const socketio = require('socket.io')
+const formatMessage = require("../utils/messages")
 
 /**
  * Get port from environment and store in Express.
@@ -19,7 +20,7 @@ app.set('port', port);
 /**
  * Create HTTP server.
  */
-
+const bot = "Rajagiri Bot"
 var server = http.createServer(app);
 const io = socketio(server)
 
@@ -27,15 +28,16 @@ io.on('connection',(socket)=>{
 	console.log("new client connected");
 
 	//emits to current user
-	socket.emit('message',"A user has joined"); // emits to single user
+	socket.emit('message',formatMessage(bot,"Welcome Rajagirians...")); // emits to single user
 	//broadcast to all users
-	socket.broadcast.emit('message','A user has joined everybody...:)');// broadcast or emit to all users
-	
+	socket.broadcast.emit('message',formatMessage(bot,"A new user joined everybocy.."));// broadcast or emit to all users
+  
+  const username = "ambadi"
 
-	socket.on('chatMessage',(msg)=>{
-		if (msg != '') {
-			socket.broadcast.emit('messageToAll',msg);
-			console.log(msg);
+	socket.on('chatMessage',(msgobj)=>{
+		if (msgobj.message != '') {
+			socket.broadcast.emit('messageToAll',msgobj);
+      console.log(msgobj)
 		}
 		
 	});
@@ -46,7 +48,7 @@ io.on('connection',(socket)=>{
 	//calls when cliet disconnects
 	socket.on('disconnect',()=>{
 		console.log("A user has left from the chat");
-		io.emit('message',"A user has left from the chat") ;// broadcast or emit to all users
+		io.emit('message', formatMessage(bot,"A user has left from the chat")) ;// broadcast or emit to all users
 	});
 });
 

@@ -5,6 +5,7 @@
 		Chat
 	</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.10.1/qs.js" integrity="sha512-DkxSbrm2xe6jcerSwLA4vS8WV7UarP44UjrS+Yp2MRFE2md2qPLpZVTyoxHrM2mvZ2Ft2zhPUMplV20zNFXriQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	<style>
 		body{
 			
@@ -432,11 +433,11 @@ body{
 				<div class="triangle"></div>
 				<div class="message">
 					OK
-				</div> -->
-			</li>
+				</div>
+			</li>-->
 		</ul>
 		<footer>
-			<input type="text" placeholder="Type your message" class="form-control p-4" id="ta"></input>
+			<input type="text" placeholder="Type your message" class="form-control p-4" id="ta"/>
 			<img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/1940306/ico_picture.png" alt="">
 			<img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/1940306/ico_file.png" alt="">
 			<a href="#" onclick="send(event)">Send</a>
@@ -448,6 +449,7 @@ body{
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.min.js" integrity="sha384-Atwg2Pkwv9vp0ygtn1JAojH0nYbwNJLPhwyoVbhoPwBhjQPR5VtM2+xf0Uwh9KtT" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 <script src="https://cdn.socket.io/4.0.1/socket.io.js"></script>
+<script src="https://momentjs.com/downloads/moment.js"></script>
 <script >
 	
 	const socket = io();
@@ -459,17 +461,17 @@ body{
 				msgelement.innerHTML =`
 						<div class="entete">
 							<span class="status green"></span>
-							<h2>Vincent</h2>
-							<h3>10:12AM, Today</h3>
+							<h2>${msg.username}</h2>
+							<h3>${msg.time}, Today</h3>
 							
 						</div>
 						<div class="triangle"></div>
 						<div class="message">
-							${msg}
+							${msg.text}
 						</div>
 					`;
 				chat.appendChild(msgelement);
-
+						
 				var scrollingElement = (document.getElementById('chat'));
 				scrollingElement.scrollTop = scrollingElement.scrollHeight;
 				
@@ -477,41 +479,43 @@ body{
 
 	});
 
-	
-
-
-
-
-
-
-
-
-
-
-
-	var msg = document.getElementById('ta').value;
-	socket.emit('chatMessage',msg);
+	// var msg = document.getElementById('ta').value;
+	// var msgobj = {
+	// 	message:msg,
+	// 	username:'ambadi'
+	// }
+	// socket.emit('chatMessage',msgobj);
 
 	var chat = document.getElementById('chat');
+
 	function send(e) {
 		e.preventDefault();
+		const {name,room} = Qs.parse(location.search,{
+								ignoreQueryPrefix:true
+							})
+		console.log(name,room)
 		var msg = document.getElementById('ta').value;
-
+		var msgobj = {
+		 				message:msg,
+						username:name,
+						chatroom:room,
+						time:moment().format('h:mm a') 
+	 				}
 		if(msg != ''){
-			socket.emit('chatMessage',msg);
+			socket.emit('chatMessage',msgobj);
 
 			var msgelement = document.createElement('LI');
 			msgelement.classList.add('me');
 			msgelement.innerHTML =`
 					<div class="entete">
 						
-						<h2>Vincent</h2>
-						<h3>10:12AM, Today</h3>
+						<h2>${msgobj.username}</h2>
+						<h3>${msgobj.time}, Today</h3>
 						<span class="status blue"></span>
 					</div>
 					<div class="triangle"></div>
 					<div class="message">
-						${msg}
+						${msgobj.message}
 					</div>
 				`;
 			chat.appendChild(msgelement);
@@ -530,22 +534,32 @@ body{
 	ta.addEventListener('keypress', function (e) {
 		
 	    if (e.key === 'Enter') {
-	   			var msg = document.getElementById('ta').value;
+				var msg = document.getElementById('ta').value;
+				const {name,room} = Qs.parse(location.search,{
+										ignoreQueryPrefix:true
+									}) //exteacting name and room from url usig query string
+				var msgobj = {
+								message:msg,
+								username:name,
+								chatroom:room,
+								time:moment().format('h:mm a') 
+							 }   
+							 
 				if(msg != ''){
-					socket.emit('chatMessage',msg);
+					socket.emit('chatMessage',msgobj);
 
 					var msgelement = document.createElement('LI');
 					msgelement.classList.add('me');
 					msgelement.innerHTML =`
 							<div class="entete">
 								
-								<h2>Vincent</h2>
-								<h3>10:12AM, Today</h3>
+								<h2>${msgobj.username}</h2>
+								<h3>${msgobj.time}, Today</h3>
 								<span class="status blue"></span>
 							</div>
 							<div class="triangle"></div>
 							<div class="message">
-								${msg}
+								${msgobj.message}
 							</div>
 						`;
 					chat.appendChild(msgelement);
@@ -559,7 +573,7 @@ body{
 	});
 
 
-	socket.on('messageToAll',function(msg) {
+	socket.on('messageToAll',function(msgobj) {
 		//socket.emit('chatMessage',msg);
 
 				var msgelement = document.createElement('LI');
@@ -567,13 +581,13 @@ body{
 				msgelement.innerHTML =`
 						<div class="entete">
 							<span class="status green"></span>
-							<h2>Vincent</h2>
-							<h3>10:12AM, Today</h3>
+							<h2>${msgobj.username}</h2>
+							<h3>${msgobj.time}, Today</h3>
 							
 						</div>
 						<div class="triangle"></div>
 						<div class="message">
-							${msg}
+							${msgobj.message}
 						</div>
 					`;
 				chat.appendChild(msgelement);
