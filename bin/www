@@ -9,6 +9,7 @@ var debug = require('debug')('chatroomdev:server');
 var http = require('http');
 const socketio = require('socket.io')
 const formatMessage = require("../utils/messages")
+const {userJoin,getCurrentUser,getRoomUsers} = require("../utils/users")
 
 /**
  * Get port from environment and store in Express.
@@ -25,31 +26,45 @@ var server = http.createServer(app);
 const io = socketio(server)
 
 io.on('connection',(socket)=>{
-	console.log("new client connected");
+  var obj = {};
+    socket.on('joinRoom',(msgobj)=>{
+      obj = msgobj;
+      var username = msgobj.username;
+      var room = msgobj.chatroom;
+      var user = userJoin(socket.id,username,room);
+      socket.join(user.room)
 
-	//emits to current user
-	socket.emit('message',formatMessage(bot,"Welcome Rajagirians...")); // emits to single user
-	//broadcast to all users
-	socket.broadcast.emit('message',formatMessage(bot,"A new user joined everybocy.."));// broadcast or emit to all users
-  
-  const username = "ambadi"
+      //emits to current user
+      socket.emit('message',formatMessage(bot,"Welcome Rajagirians...")); // emits to single user
+      
+      //broadcast to all users
+      socket.broadcast.to(user.room).emit('message',formatMessage(bot,user.username+" has joined everybody.."));// broadcast or emit to all users
 
-	socket.on('chatMessage',(msgobj)=>{
-		if (msgobj.message != '') {
-			socket.broadcast.emit('messageToAll',msgobj);
-      console.log(msgobj)
-		}
-		
-	});
+      socket.on('chatMessage',(msgobj)=>{
+        if (msgobj.message != '') {
+          socket.broadcast.to(user.room).emit('messageToAll',msgobj);
+         
+        }
+      
+      });
+      
+      io.to(obj.chatroom).emit('roomUsers',{room:obj.chatroom,users:getRoomUsers(obj.chatroom)});
+      
 
+      
+    });
+    //calls when cliet disconnects
+    socket.on('disconnect',()=>{
+      
+      io.to(obj.chatroom).emit('message', formatMessage(bot, obj.username+" left from the chat")) ;// broadcast or emit to all users
+      io.to(obj.chatroom).emit('roomUsers',{room:obj.chatroom,users:getRoomUsers(obj.chatroom)});
+    });
+ 
+    console.log("new client connected");
 
+    
 
-
-	//calls when cliet disconnects
-	socket.on('disconnect',()=>{
-		console.log("A user has left from the chat");
-		io.emit('message', formatMessage(bot,"A user has left from the chat")) ;// broadcast or emit to all users
-	});
+    
 });
 
 
