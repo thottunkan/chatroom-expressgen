@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>
+	<title id="title">
 		Chat
 	</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
@@ -476,6 +476,7 @@ body{
 		var usersList = document.getElementById('usersList');
 		var userelement = document.createElement('LI');
 		document.getElementById('roomname').innerHTML = room;
+		document.getElementById('title').innerHTML = room;
 		var out = ``;
 		
 			  
@@ -483,10 +484,10 @@ body{
 		for(var i=0 ; i<users.length;i++){
 			
 			out=`
-				<img width='50' height='50' src="https://img-premium.flaticon.com/png/512/2922/2922510.png?token=exp=1621928260~hmac=e78b9aaea0d38c07687cde26cce86370" alt="">
+				<img width='50' height='50' src="https://cdn1.iconfinder.com/data/icons/education-1-15/151/2-512.png" alt="">
 				<div>
 					<h2>${users[i].username}</h2>
-					<h3>
+					<h3 style='color:white;'>
 						<span class="status green"></span>
 						online
 					</h3>
@@ -507,7 +508,8 @@ body{
 
 	socket.on('message',function(msg) {
 
-
+				var audio = new Audio('https://quz1yp-a.akamaihd.net/downloads/ringtones/files/mp3/oppo-trickle-30288.mp3')	;
+				audio.addEventListener("canplay",function(){ audio.play(); });
 				var msgelement = document.createElement('LI');
 				msgelement.classList.add('you');
 				msgelement.innerHTML =`
@@ -523,7 +525,7 @@ body{
 						</div>
 					`;
 				chat.appendChild(msgelement);
-						
+				
 				var scrollingElement = (document.getElementById('chat'));
 				scrollingElement.scrollTop = scrollingElement.scrollHeight;
 				
@@ -628,7 +630,8 @@ body{
 
 	socket.on('messageToAll',function(msgobj) {
 		//socket.emit('chatMessage',msg);
-
+		var audio = new Audio('https://quz1yp-a.akamaihd.net/downloads/ringtones/files/mp3/oppo-trickle-30288.mp3')	;
+		audio.addEventListener("canplay",function(){ audio.play(); });
 				var msgelement = document.createElement('LI');
 				msgelement.classList.add('you');
 				msgelement.innerHTML =`
