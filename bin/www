@@ -45,7 +45,6 @@ io.on('connection',(socket)=>{
           socket.broadcast.to(user.room).emit('messageToAll',msgobj);
          
         }
-      
       });
       
       io.to(obj.chatroom).emit('roomUsers',{room:obj.chatroom,users:getRoomUsers(obj.chatroom)});
