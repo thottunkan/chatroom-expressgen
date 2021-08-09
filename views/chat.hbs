@@ -281,7 +281,7 @@ body{
 		</footer>
 	</main>
 </div>
-<div hidden >
+<div >
 	<p id="displayName">{{this.displayName}}</p>
 	<p id="photoURL">{{this.photoURL}}</p>
 	<p id="room">{{this.room}}</p>
@@ -294,7 +294,7 @@ body{
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 <script src="https://cdn.socket.io/4.0.1/socket.io.js"></script>
 <script src="https://momentjs.com/downloads/moment.js"></script>
-<script >
+<script>
 
 	window.addEventListener('contextmenu',function(e) {
 		e.preventDefault();
@@ -302,9 +302,9 @@ body{
 	
 	const socket = io();
 
-	var name = document.getElementById('displayName').innerHTML;
-	var room = document.getElementById('room').innerHTML;
-	var photoURL = document.getElementById('photoURL').innerHTML;
+	const name = document.getElementById('displayName').innerHTML;
+	const room = document.getElementById('room').innerHTML;
+	const photoURL = document.getElementById('photoURL').innerHTML;
 
 	var msgobj = {
 					message:'',
@@ -313,6 +313,8 @@ body{
 					time:moment().format('h:mm a') 
 				}  
 
+////////////////////////////////////////////
+    //list users
 
 	socket.on('roomUsers',function(roomUsers){
 		var room = roomUsers.room;
@@ -342,8 +344,11 @@ body{
 			usersList.appendChild(userelement);
 	});	
 
+////////////////////////////////////////////
+	//join to room
 	socket.emit('joinRoom',msgobj);
-
+///////////////////////////////////////////
+	//get message
 	socket.on('message',function(msg) {
 
 				var audio = new Audio('https://quz1yp-a.akamaihd.net/downloads/ringtones/files/mp3/oppo-trickle-30288.mp3')	;
@@ -370,32 +375,36 @@ body{
 
 
 	});
-
+/////////////////////////////////////
+//send message 
 
 	var chat = document.getElementById('chat');
 
 	function send(e) {
 		e.preventDefault();
-		const {name,room} = Qs.parse(location.search,{
-								ignoreQueryPrefix:true
-							})
-		console.log(name,room)
+		
+		
+		
 		var msg = document.getElementById('ta').value;
-		var msgobj = {
-		 				message:msg,
-						username:name,
-						chatroom:room,
-						time:moment().format('h:mm a') 
-	 				}
+		
+		
 		if(msg != ''){
-			socket.emit('chatMessage',msgobj);
+			var msgobj = {
+					message:msg,
+					username:name,
+					chatroom:room,
+					time:moment().format('h:mm a') 
+			}
 
+			socket.emit('chatMessage',msgobj);
+			
+			
 			var msgelement = document.createElement('LI');
 			msgelement.classList.add('me');
 			msgelement.innerHTML =`
 					<div class="entete">
 						
-						<h2>${msgobj.username}</h2>
+						<h2>${name}</h2>
 						<h3>${msgobj.time}, Today</h3>
 						<span class="status blue"></span>
 					</div>
@@ -421,18 +430,14 @@ body{
 		
 	    if (e.key === 'Enter') {
 				var msg = document.getElementById('ta').value;
-				const {name,room} = Qs.parse(location.search,{
-										ignoreQueryPrefix:true
-									}) //exteacting name and room from url usig query string
-				var msgobj = {
-								message:msg,
-								username:name,
-								chatroom:room,
-								time:moment().format('h:mm a') 
-							 }   
-							 
+				
 				if(msg != ''){
-					
+					var msgobj = {
+						message:msg,
+						username:name,
+						chatroom:room,
+						time:moment().format('h:mm a') 
+					}
 					socket.emit('chatMessage',msgobj);
 
 					var msgelement = document.createElement('LI');
@@ -469,7 +474,7 @@ body{
 				msgelement.innerHTML =`
 						<div class="entete">
 							<span class="status green"></span>
-							<h2>${msgobj.username}</h2>
+							<h2>${msgobj.name}</h2>
 							<h3>${msgobj.time}, Today</h3>
 							
 						</div>
@@ -479,7 +484,8 @@ body{
 						</div>
 					`;
 				chat.appendChild(msgelement);
-	
+			var scrollingElement = (document.getElementById('chat'));
+			scrollingElement.scrollTop = scrollingElement.scrollHeight;
 
 	});
 </script>
